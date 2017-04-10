@@ -5,7 +5,10 @@ import org.fluttercode.datafactory.impl.DataFactory;
 import org.reflections.ReflectionUtils;
 import org.reflections.Reflections;
 
+import javax.annotation.PostConstruct;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -38,25 +41,24 @@ public class ObjectFactory {
     }
 
     @SuppressWarnings("unchecked")
+    @SneakyThrows
     public <T> T createObject(Class<T> type) throws IllegalAccessException, InstantiationException {
         Class<T> realClass = resolveImpl(type);
         T t = realClass.newInstance();
         configure(t);
+        inokeInitMethods(realClass, t);
 
         return t;
     }
 
-
-
-
-
-
-
-
-
-
-
-
+    private <T> void inokeInitMethods(Class<T> realClass, T t) throws IllegalAccessException, InvocationTargetException {
+        Method[] methods = realClass.getDeclaredMethods();
+        for (Method method : methods) {
+            if (method.isAnnotationPresent(PostConstruct.class)) {
+                method.invoke(t);
+            }
+        }
+    }
 
 
     private <T> void configure(T t) {
