@@ -1,8 +1,11 @@
 package mySpring;
 
 import lombok.SneakyThrows;
+import org.fluttercode.datafactory.impl.DataFactory;
+import org.reflections.ReflectionUtils;
 import org.reflections.Reflections;
 
+import java.lang.reflect.Field;
 import java.util.Optional;
 import java.util.Set;
 
@@ -13,6 +16,7 @@ public class ObjectFactory {
     private static ObjectFactory ourInstance = new ObjectFactory();
     private Config config = new JavaConfig();
     private Reflections scanner = new Reflections("mySpring");
+    private DataFactory dataFactory = new DataFactory();
 
     public static ObjectFactory getInstance() {
         return ourInstance;
@@ -22,20 +26,25 @@ public class ObjectFactory {
     private ObjectFactory() {
     }
 
-    @SneakyThrows
-    public <T> T createObject(Class<T> type) {
-        Class<T> realClass;
-        realClass = resolveImpl(type);
-        return realClass.newInstance();
+    @SuppressWarnings("unchecked")
+    public <T> T createObject(Class<T> type) throws IllegalAccessException, InstantiationException {
+        Class<T> realClass = resolveImpl(type);
+        T t = realClass.newInstance();
+
+
+        Set<Field> fields = ReflectionUtils.getAllFields(realClass,field -> field.isAnnotationPresent(InjectRandomInt.class));
+        for (Field field : fields) {
+            InjectRandomInt annotation = field.getAnnotation(InjectRandomInt.class);
+            int min = annotation.min();
+            int max = annotation.max();
+            int value = dataFactory.getNumberBetween(min, max);
+            field.setAccessible(true);
+            field.set(t,value);
+        }
+
+
+        return t;
     }
-
-
-
-
-
-
-
-
 
 
     private <T> Class<T> resolveImpl(Class<T> type) {

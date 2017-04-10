@@ -1,13 +1,11 @@
 ### IntelliJ IDEA ###
-.idea
+/.idea/
 *.iws
 *.iml
 *.ipr
 
 
 ### Java template
-*.class
-
 # Log file
 *.log
 
@@ -38,3 +36,4 @@ buildNumber.properties
 # Avoid ignoring Maven wrapper jar file (.jar files are usually ignored)
 !/.mvn/wrapper/maven-wrapper.jar
 
+src/main/resources/

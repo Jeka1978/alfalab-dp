@@ -1,10 +1,13 @@
 package mySpring;
 
+import lombok.Data;
+
 /**
  * Created by Evegeny on 10/04/2017.
  */
+@Data
 public class Elf {
-//    @InjectRandomInt(min = 10, max = 23)
+    @InjectRandomInt(min = 10, max = 23)
     private int power;
     private int magicPower;
 
