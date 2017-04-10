@@ -6,6 +6,8 @@ import org.reflections.ReflectionUtils;
 import org.reflections.Reflections;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -16,34 +18,45 @@ public class ObjectFactory {
     private static ObjectFactory ourInstance = new ObjectFactory();
     private Config config = new JavaConfig();
     private Reflections scanner = new Reflections("mySpring");
-    private DataFactory dataFactory = new DataFactory();
+    private List<ObjectConfigurer> objectConfigurers = new ArrayList<>();
 
     public static ObjectFactory getInstance() {
         return ourInstance;
     }
 
 
+    @SneakyThrows
     private ObjectFactory() {
+        Set<Class<? extends ObjectConfigurer>> configurerClasses = scanner.getSubTypesOf(ObjectConfigurer.class);
+        for (Class<? extends ObjectConfigurer> configurerClass : configurerClasses) {
+            objectConfigurers.add(configurerClass.newInstance());
+        }
     }
 
     @SuppressWarnings("unchecked")
     public <T> T createObject(Class<T> type) throws IllegalAccessException, InstantiationException {
         Class<T> realClass = resolveImpl(type);
         T t = realClass.newInstance();
-
-
-        Set<Field> fields = ReflectionUtils.getAllFields(realClass,field -> field.isAnnotationPresent(InjectRandomInt.class));
-        for (Field field : fields) {
-            InjectRandomInt annotation = field.getAnnotation(InjectRandomInt.class);
-            int min = annotation.min();
-            int max = annotation.max();
-            int value = dataFactory.getNumberBetween(min, max);
-            field.setAccessible(true);
-            field.set(t,value);
-        }
-
+        configure(t);
 
         return t;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    private <T> void configure(T t) {
+        objectConfigurers.forEach(configurer -> configurer.configure(t));
     }
 
 
