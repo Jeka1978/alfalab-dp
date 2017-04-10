@@ -6,9 +6,7 @@ import org.reflections.ReflectionUtils;
 import org.reflections.Reflections;
 
 import javax.annotation.PostConstruct;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -47,6 +45,20 @@ public class ObjectFactory {
         T t = realClass.newInstance();
         configure(t);
         inokeInitMethods(realClass, t);
+        if (realClass.isAnnotationPresent(Benchmark.class)) {
+            return (T) Proxy.newProxyInstance(realClass.getClassLoader(), realClass.getInterfaces(), new InvocationHandler() {
+                @Override
+                public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                    System.out.println("********BENCHMARK OF METHOD "+method.getName()+" start ***************");
+                    long start = System.nanoTime();
+                    Object retVal = method.invoke(t, args);
+                    long end = System.nanoTime();
+                    System.out.println(end-start);
+                    System.out.println("********BENCHMARK OF METHOD "+method.getName()+" end ***************");
+                    return retVal;
+                }
+            });
+        }
 
         return t;
     }
