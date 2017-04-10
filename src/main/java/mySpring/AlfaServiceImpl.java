@@ -3,7 +3,6 @@ package mySpring;
 /**
  * Created by Evegeny on 10/04/2017.
  */
-@Benchmark
 public class AlfaServiceImpl implements AlfaService {
     @Override
     public void doWork() {

@@ -20,6 +20,7 @@ public class ObjectFactory {
     private Config config = new JavaConfig();
     private Reflections scanner = new Reflections("mySpring");
     private List<ObjectConfigurer> objectConfigurers = new ArrayList<>();
+    private List<ProxyConfigurer> proxyConfigurers = new ArrayList<>();
 
     public static ObjectFactory getInstance() {
         return ourInstance;
@@ -29,6 +30,14 @@ public class ObjectFactory {
     @SneakyThrows
     private ObjectFactory() {
         initObjectConfigurers();
+        initProxyConfigurers();
+    }
+
+    private void initProxyConfigurers() throws InstantiationException, IllegalAccessException {
+        Set<Class<? extends ProxyConfigurer>> classes = scanner.getSubTypesOf(ProxyConfigurer.class);
+        for (Class<? extends ProxyConfigurer> aClass : classes) {
+            proxyConfigurers.add(aClass.newInstance());
+        }
     }
 
     private void initObjectConfigurers() throws InstantiationException, IllegalAccessException {
@@ -36,6 +45,7 @@ public class ObjectFactory {
         for (Class<? extends ObjectConfigurer> configurerClass : configurerClasses) {
             objectConfigurers.add(configurerClass.newInstance());
         }
+
     }
 
     @SuppressWarnings("unchecked")
@@ -45,21 +55,23 @@ public class ObjectFactory {
         T t = realClass.newInstance();
         configure(t);
         inokeInitMethods(realClass, t);
-        if (realClass.isAnnotationPresent(Benchmark.class)) {
-            return (T) Proxy.newProxyInstance(realClass.getClassLoader(), realClass.getInterfaces(), new InvocationHandler() {
-                @Override
-                public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                    System.out.println("********BENCHMARK OF METHOD "+method.getName()+" start ***************");
-                    long start = System.nanoTime();
-                    Object retVal = method.invoke(t, args);
-                    long end = System.nanoTime();
-                    System.out.println(end-start);
-                    System.out.println("********BENCHMARK OF METHOD "+method.getName()+" end ***************");
-                    return retVal;
-                }
-            });
-        }
+        t = wrapWithProxy(realClass, t);
+        return t;
+    }
 
+
+
+
+
+
+
+
+
+
+    private <T> T wrapWithProxy(Class<T> realClass, T t) {
+        for (ProxyConfigurer proxyConfigurer : proxyConfigurers) {
+            t = proxyConfigurer.wrapWithProxy(t, realClass);
+        }
         return t;
     }
 
