@@ -27,6 +27,10 @@ public class ObjectFactory {
 
     @SneakyThrows
     private ObjectFactory() {
+        initObjectConfigurers();
+    }
+
+    private void initObjectConfigurers() throws InstantiationException, IllegalAccessException {
         Set<Class<? extends ObjectConfigurer>> configurerClasses = scanner.getSubTypesOf(ObjectConfigurer.class);
         for (Class<? extends ObjectConfigurer> configurerClass : configurerClasses) {
             objectConfigurers.add(configurerClass.newInstance());

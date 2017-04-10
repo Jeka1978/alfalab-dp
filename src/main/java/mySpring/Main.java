@@ -1,11 +1,15 @@
 package mySpring;
 
+import lombok.SneakyThrows;
+
 /**
  * Created by Evegeny on 10/04/2017.
  */
 public class Main {
+    @SneakyThrows
     public static void main(String[] args) {
-
-        new IRobot().cleanRoom();
+        ObjectFactory factory = ObjectFactory.getInstance();
+        IRobot iRobot = factory.createObject(IRobot.class);
+        iRobot.cleanRoom();
     }
 }
