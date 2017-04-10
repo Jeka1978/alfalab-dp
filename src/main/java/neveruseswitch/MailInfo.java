@@ -1,4 +1,4 @@
-package lab1;
+package neveruseswitch;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,4 +1,4 @@
-package lab1;
+package neveruseswitch;
 
 import java.util.Random;
 
@@ -9,6 +9,6 @@ public class DBUtils {
     private static Random random = new Random();
 
     public static MailInfo getMailInfo() {
-        return new MailInfo(new ClientData(), random.nextInt(2) + 1);
+        return new MailInfo(new ClientData(), random.nextInt(3) + 1);
     }
 }

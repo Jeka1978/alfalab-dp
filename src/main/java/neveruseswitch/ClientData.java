@@ -1,4 +1,4 @@
-package lab1;
+package neveruseswitch;
 
 /**
  * Created by Evegeny on 09/04/2017.
